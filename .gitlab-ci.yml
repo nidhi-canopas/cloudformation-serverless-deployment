@@ -29,7 +29,7 @@ serverless_deploy:
     - aws s3 cp test_lambda.zip s3://your_aws_bucket_name
     - aws cloudformation validate-template --template-body file://serverless_deployment.yml 
     - aws cloudformation deploy --stack-name test-lambda-stack --template-file serverless_deployment.yml --parameter-overrides AwsRegion=$AWS_REGION AwsAccessKeyId=$AWS_ACCESS_KEY_ID AwsSecretAccessKey=$AWS_SECRET_ACCESS_KEY
-          LambdaBucket=lambda-test-bucket-006 LambdaUrl=test_lambda.zip
+          LambdaBucket=your_aws_bucket_name LambdaUrl=test_lambda.zip
           ApiGatewayStageName=prod --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
   only:
     - master
