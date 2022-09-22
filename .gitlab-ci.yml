@@ -1,0 +1,35 @@
+stages:
+  - build
+  - deploy
+
+serverless_build:
+  stage: build
+  image: golang:1.19
+  script:
+    - apt-get update && apt-get install -y zip sed
+    - GOOS=linux GOARCH=amd64 go build -o main main.go
+    - zip test_lambda.zip main
+  artifacts:
+    paths:
+      - test_lambda.zip
+  only:
+    - master
+
+serverless_deploy:
+  stage: deploy
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint: [""]
+  dependencies:
+    - serverless_build
+  script:
+    - aws configure set aws_access_key_id your_access_key_id
+    - aws configure set aws_secret_access_key your_secret_key
+    - aws configure set region your_aws_region
+    - aws s3 cp test_lambda.zip s3://your_aws_bucket_name
+    - aws cloudformation validate-template --template-body file://serverless_deployment.yml 
+    - aws cloudformation deploy --stack-name test-lambda-stack --template-file serverless_deployment.yml --parameter-overrides AwsRegion=$AWS_REGION AwsAccessKeyId=$AWS_ACCESS_KEY_ID AwsSecretAccessKey=$AWS_SECRET_ACCESS_KEY
+          LambdaBucket=lambda-test-bucket-006 LambdaUrl=test_lambda.zip
+          ApiGatewayStageName=prod --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
+  only:
+    - master
